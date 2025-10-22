@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<!-- saved from url=(0101)https://campus.uax.es/moodle/pluginfile.php/2970179/mod_resource/content/1/ASGBD%20-%20PROCEDURE.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MySQL - Procedimientos y Jobs</title>
+    <link href="./MySQL - Procedimientos y Jobs_files/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+        .navbar, .card-header {
+            background-color: #1e40af !important;
+        }
+
+        .header-title {
+            color: #1e3a8a;
+        }
+
+        pre {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="text-center py-3 border-bottom bg-white shadow-sm">
+        <img src="./MySQL - Procedimientos y Jobs_files/uaxfp-LOGO-CARD.png" alt="Logo" height="60">
+        <h2 class="mt-2 header-title">ASIR - Administración de Sistemas Gestores de Bases de Datos</h2>
+        <p class="text-secondary">Profesor Carlos Rufiángel García</p>
+    </div>
+
+    <div class="container my-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header text-white">1. Estructura base de datos de ejemplo</div>
+            <div class="card-body">
+                <p>Base de datos: <code>productos_informaticos</code></p>
+                <pre><code>CREATE DATABASE IF NOT EXISTS productos_informaticos;
+USE productos_informaticos;
+
+CREATE TABLE productos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100),
+  categoria VARCHAR(50),
+  precio DECIMAL(10,2),
+  cantidad INT,
+  en_promocion TINYINT(1),
+  estado VARCHAR(20),
+  minimo INT,
+  alerta_stock TINYINT(1) DEFAULT 0
+);
+
+INSERT INTO productos (nombre, categoria, precio, cantidad, en_promocion, estado, minimo)
+VALUES 
+('Teclado mecánico', 'Periféricos', 45.90, 20, 1, 'activo', 5),
+('Monitor 27"', 'Pantallas', 189.00, 15, 0, 'activo', 3),
+('Disco SSD 1TB', 'Almacenamiento', 99.00, 50, 0, 'activo', 10),
+('Ratón óptico', 'Periféricos', 19.50, 2, 1, 'activo', 5),
+('Impresora láser', 'Impresoras', 139.00, 5, 0, 'obsoleto', 2);</code></pre>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header text-white">2. Creación de procedimientos</div>
+            <div class="card-body">
+                <pre><code>DELIMITER //
+CREATE PROCEDURE aplicar_descuento_promocion()
+BEGIN
+  UPDATE productos
+  SET precio = precio * 0.95
+  WHERE en_promocion = 1;
+END //
+DELIMITER ;
+
+CALL aplicar_descuento_promocion();</code></pre>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header text-white">3. Asociar un procedimiento a un Job</div>
+            <div class="card-body">
+                <pre><code>CREATE EVENT ejecutar_descuentos
+ON SCHEDULE EVERY 1 WEEK
+STARTS TIMESTAMP(CURRENT_DATE, '00:00:00')
+DO
+  CALL aplicar_descuento_promocion();</code></pre>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header text-white">4. Ejemplos adicionales</div>
+            <div class="card-body">
+                <h6>Eliminar productos obsoletos:</h6>
+                <pre><code>CREATE PROCEDURE eliminar_obsoletos()
+BEGIN
+  DELETE FROM productos WHERE estado = 'obsoleto';
+END;</code></pre>
+
+                <h6>Marcar alerta de stock bajo:</h6>
+                <pre><code>CREATE PROCEDURE revisar_stock()
+BEGIN
+  UPDATE productos
+  SET alerta_stock = 1
+  WHERE cantidad &lt; minimo;
+END;</code></pre>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header text-white">5. Sentencias de control de flujo y bucles</div>
+            <div class="card-body">
+                <h6>IF / ELSE</h6>
+                <pre><code>IF cantidad &lt; minimo THEN
+  SET alerta_stock = 1;
+ELSE
+  SET alerta_stock = 0;
+END IF;</code></pre>
+
+                <h6>CASE</h6>
+                <pre><code>CASE categoria
+  WHEN 'Periféricos' THEN UPDATE productos SET descuento = 5;
+  WHEN 'Pantallas' THEN UPDATE productos SET descuento = 10;
+  ELSE UPDATE productos SET descuento = 2;
+END CASE;</code></pre>
+
+                <h6>WHILE</h6>
+                <pre><code>SET contador = 0;
+WHILE contador &lt; 10 DO
+  INSERT INTO logs VALUES (NOW(), 'Iteración', contador);
+  SET contador = contador + 1;
+END WHILE;</code></pre>
+
+                <h6>REPEAT</h6>
+                <pre><code>SET contador = 0;
+REPEAT
+  SET contador = contador + 1;
+UNTIL contador &gt;= 5
+END REPEAT;</code></pre>
+
+                <h6>LOOP (con LEAVE)</h6>
+                <pre><code>mi_loop: LOOP
+  SET contador = contador + 1;
+  IF contador &gt; 5 THEN
+    LEAVE mi_loop;
+  END IF;
+END LOOP;</code></pre>
+            </div>
+        </div>
+    </div>
+
+
+
+</body></html>
